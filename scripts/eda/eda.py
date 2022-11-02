@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 data_path = "../../data/merged/"
 
 # # Datos por día
@@ -25,20 +28,45 @@ data_day[data_day.columns[:-2]].mean().plot().grid()
 
 # Valores promedio por dia de cada variable del dataset
 
-time = range(len(data_day))
-fig, axs = plt.subplots(3, 2, figsize=(15, 15))
-axs[1][1].plot(time, data_day.POZ_PIT_1501A)
-axs[1][1].set_title("POZ_PIT_1501A")
-axs[0][1].plot(time, data_day.POZ_PIT_1401B)
-axs[0][1].set_title("POZ_PIT_1401B")
-axs[0][0].plot(time, data_day.POZ_PIT_1400A)
-axs[0][0].set_title("POZ_PIT_1400A")
-axs[1][0].plot(time, data_day.POZ_PIT_1400B)
-axs[1][0].set_title("POZ_PIT_1400B")
-axs[2][0].plot(time, data_day["Volumen Transportado  [bls]"])
-axs[2][0].set_title("Volumen Transportado [bls]")
-axs[2][1].plot(time, data_day["Consumo Bombas [MBTU]"])
-axs[2][1].set_title("Consumo Bombas [MBTU]")
+# +
+fig = make_subplots(rows=3, cols=2,
+                    subplot_titles=("POZ_PIT_1501A", 
+                                    "POZ_PIT_1401B", 
+                                    "POZ_PIT_1400A", 
+                                    "POZ_PIT_1400B",
+                                    "Volumen Transportado  [bls]",
+                                    "Consumo Bombas [MBTU]"))
+
+fig.add_trace(
+    go.Line(x=np.arange(519), y=data_day.POZ_PIT_1501A, name="POZ_PIT_1501A"),
+    row=1, col=1
+)
+fig.add_trace(
+    go.Line(x=np.arange(519), y=data_day.POZ_PIT_1401B, name="POZ_PIT_1401B"),
+    row=1, col=2
+)
+
+fig.add_trace(
+    go.Line(x=np.arange(519), y=data_day.POZ_PIT_1400A, name="POZ_PIT_1400A"),
+    row=2, col=1
+)
+fig.add_trace(
+    go.Line(x=np.arange(519), y=data_day.POZ_PIT_1400B, name="POZ_PIT_1400B"),
+    row=2, col=2
+)
+
+fig.add_trace(
+    go.Line(x=np.arange(519), y=data_day["Volumen Transportado  [bls]"], name="Volumen Transportado  [bls]"),
+    row=3, col=1
+)
+fig.add_trace(
+    go.Line(x=np.arange(519), y=data_day["Consumo Bombas [MBTU]"], name="Consumo Bombas [MBTU]"),
+    row=3, col=2
+)
+
+fig.update_layout(height=1000, width=900, title_text="Datos por día")
+fig.show()
+# -
 
 # Correlaciones entre variables
 
@@ -47,6 +75,16 @@ sns.pairplot(data_day)
 # Matriz de correlación
 
 data_day.corr()
+
+px.line(data_day["Volumen Transportado  [bls]"]/data_day["Consumo Bombas [MBTU]"])
+
+# Outlayer \#1: Producción vs consumo = 2222
+
+data_day.iloc[405]
+
+# Outlayer \#2: Producción vs consumo = 14.69
+
+data_day.iloc[55]
 
 # # Datos por minutos
 
@@ -63,3 +101,5 @@ data_day_std = data_min.groupby(['date']).std()
 data_day_std
 
 data_day_std.describe()
+
+
