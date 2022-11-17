@@ -132,11 +132,16 @@ data_day.iloc[123]
 
 data_day.iloc[160]
 
-data_day.columns[1:7]
+# * Obervando los boxplot se evidencian multiples outlayers en los datos
 
 fig = go.Figure()
 for column in data_day.columns[1:5]:
-    fig.add_trace(go.Box(y=data_day[column]))
+    fig.add_trace(go.Box(name = column, y=data_day[column]))
+fig.add_trace(go.Box(name = "Consumo Bombas [MBTU]", y=data_day["Consumo Bombas [MBTU]"]))
+fig.show()
+
+fig = go.Figure()
+fig.add_trace(go.Box(name = "Volumen Transportado  [bls]", y=data_day["Volumen Transportado  [bls]"]))
 fig.show()
 
 # ## Preprocesamiento
@@ -148,18 +153,47 @@ data_day_pp = data_day_pp.drop(np.arange(120, 160))
 data_day_pp = data_day_pp.drop(np.arange(160, 190))
 data_day_pp = data_day_pp.drop(np.arange(468, 519))
 data_day_pp = data_day_pp.drop([17, 57, 55, 405])
+data_day_pp = data_day_pp.drop(data_day_pp[data_day_pp["Volumen Transportado  [bls]"]<60000].index)
 
 # * Dado que POZ_PIT_1400B y POZ_PIT_1501A son practicamente iguales, para evitar redundancias y reducir la dimensionalidad, se juntan en una sola columna con el promedio aritmetico para cada valor.
 
 data_day_pp["1400B and 1501A"] = (data_day_pp["POZ_PIT_1400B"] + data_day_pp["POZ_PIT_1501A"])/2
 data_day_pp
 
+# * Se revisan nuevamente los boxplot
+
+fig = go.Figure()
+fig.add_trace(go.Box(name = "POZ_PIT_1501A", y=data_day_pp["POZ_PIT_1501A"]))
+fig.add_trace(go.Box(name = "POZ_PIT_1401B", y=data_day_pp["POZ_PIT_1401B"]))
+fig.add_trace(go.Box(name = "1400B and 1501A", y=data_day_pp["1400B and 1501A"]))
+fig.add_trace(go.Box(name = "Consumo Bombas [MBTU]", y=data_day_pp["Consumo Bombas [MBTU]"]))
+fig.show()
+
+fig = go.Figure()
+fig.add_trace(go.Box(name = "Volumen Transportado  [bls]", y=data_day_pp["Volumen Transportado  [bls]"]))
+fig.show()
+
+# Con este proceso se eliminan en total 169 outlayers
+
+data_day.shape[0] - data_day_pp.shape[0]
+
+data_day_pp
+
+# ## Nuevos datos
+
 output = data_day_pp[["POZ_PIT_1401B", 
                       "POZ_PIT_1400A", 
-                      "1400B and 1501A", 
+                      "POZ_PIT_1400B",
+                      "POZ_PIT_1501A",
                       "Volumen Transportado  [bls]",
                       "Consumo Bombas [MBTU]"
                      ]]
+
+fig = go.Figure()
+for column in output.columns[0:4]:
+    fig.add_trace(go.Box(name = column, y=data_day[column]))
+fig.add_trace(go.Box(name = "Consumo Bombas [MBTU]", y=data_day["Consumo Bombas [MBTU]"]))
+fig.show()
 
 output.to_csv('../../data/preprocessed/data_day.csv', index=False)  
 
